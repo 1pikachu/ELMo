@@ -144,7 +144,8 @@ class ELMo(object):
         sampled_softmax = SampledSoftmax(num_classes=self.parameters['vocab_size'],
                                          num_sampled=int(self.parameters['num_sampled']),
                                          tied_to=embeddings if self.parameters['weight_tying']
-                                         and self.parameters['token_encoding'] == 'word' else None)
+                                         and self.parameters['token_encoding'] == 'word' else None,
+                                         precision=self.parameters['precision'])
         outputs = sampled_softmax([lstm_inputs, next_ids])
         re_outputs = sampled_softmax([re_lstm_inputs, previous_ids])
 
@@ -177,7 +178,7 @@ class ELMo(object):
 
         print('Training took {0} sec'.format(str(time.time() - t_start)))
 
-    def evaluate(self, test_data):
+    def evaluate(self, test_data, num_iter, batch_size):
 
         def unpad(x, y_true, y_pred):
             y_true_unpad = []
@@ -202,15 +203,16 @@ class ELMo(object):
         y_true_backward = np.asarray(y_true_backward)
 
         # Predict outputs
-        y_pred_forward, y_pred_backward = self._model.predict([x, y_true_forward, y_true_backward])
+        y_pred_forward, y_pred_backward = self._model.predict([x, y_true_forward, y_true_backward], steps=num_iter, batch_size=batch_size)
 
         # Unpad sequences
         y_true_forward, y_pred_forward = unpad(x, y_true_forward, y_pred_forward)
         y_true_backward, y_pred_backward = unpad(x, y_true_backward, y_pred_backward)
 
         # Compute and print perplexity
-        print('Forward Langauge Model Perplexity: {}'.format(ELMo.perplexity(y_pred_forward, y_true_forward)))
-        print('Backward Langauge Model Perplexity: {}'.format(ELMo.perplexity(y_pred_backward, y_true_backward)))
+        # TODO: there is a issue, need check
+        # print('Forward Langauge Model Perplexity: {}'.format(ELMo.perplexity(y_pred_forward, y_true_forward)))
+        # print('Backward Langauge Model Perplexity: {}'.format(ELMo.perplexity(y_pred_backward, y_true_backward)))
 
     def wrap_multi_elmo_encoder(self, print_summary=False, save=False):
         """

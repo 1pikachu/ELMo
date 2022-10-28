@@ -18,12 +18,14 @@ class SampledSoftmax(Layer):
         - [Tensorflow code](tf.nn.sampled_softmax_loss)
         - [Sampled SoftMax](https://www.tensorflow.org/extras/candidate_sampling.pdf)
     """
-    def __init__(self, num_classes=50000, num_sampled=1000, tied_to=None, **kwargs):
+    def __init__(self, num_classes=50000, num_sampled=1000, tied_to=None, precision="float32", **kwargs):
         super(SampledSoftmax, self).__init__(**kwargs)
         self.num_sampled = num_sampled
         self.num_classes = num_classes
         self.tied_to = tied_to
-        self.sampled = (self.num_classes != self.num_sampled)
+        #self.sampled = (self.num_classes != self.num_sampled)
+        self.sampled = False
+        self.precision = precision
 
     def build(self, input_shape):
         if self.tied_to is None:
@@ -47,8 +49,12 @@ class SampledSoftmax(Layer):
 
         def softmax(x):
             lstm_outputs_batch, next_token_ids_batch = x
-            logits = tf.matmul(lstm_outputs_batch,
-                                 tf.transpose(self.softmax_W) if self.tied_to is None else tf.transpose(self.tied_to.weights[0]))
+            if self.precision == "float16":
+                logits = tf.matmul(tf.cast(lstm_outputs_batch, tf.float16),
+                    tf.cast(tf.transpose(self.softmax_W), tf.float16) if self.tied_to is None else tf.cast(tf.transpose(self.tied_to.weights[0]), tf.float16))
+            else:
+                logits = tf.matmul(lstm_outputs_batch,
+                    tf.transpose(self.softmax_W) if self.tied_to is None else tf.transpose(self.tied_to.weights[0]))
             logits = tf.nn.bias_add(logits, self.softmax_b)
             batch_predictions = tf.nn.softmax(logits)
             labels_one_hot = tf.one_hot(tf.cast(next_token_ids_batch, dtype=tf.int32), self.num_classes)
