@@ -50,6 +50,7 @@ function generate_core {
         elif [ "${device}" == "cuda" ];then
             OOB_EXEC_HEADER=" CUDA_VISIBLE_DEVICES=${device_array[i]} "
         fi
+	OOB_EXEC_HEADER+=" ${OOB_EXTRA_HEADER} "
         printf " ${OOB_EXEC_HEADER} \
 	    python train_demo.py --evaluate \
 		--epochs 5 --epoch_warmup 1 \
