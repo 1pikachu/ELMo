@@ -50,6 +50,7 @@ def parse_args():
     parser.add_argument("--evaluate", action='store_true', help="evaluation.")
     parser.add_argument("--save_model", action='store_true', help="save model.")
     parser.add_argument("--profile", action='store_true', help="profile.")
+    parser.add_argument("--tensorboard", action='store_true')
     parser.add_argument("-b", "--batch_size", type=int, default=1, help="batch size")
     parser.add_argument("--precision", type=str, default='float32', help="float32, int8 or float16")
     parser.add_argument("--epochs", type=int, default=10, help="training epochs")
@@ -122,18 +123,18 @@ if args.evaluate:
 
     print("dataset length: {}, batch_size: {}".format(len(test_generator), args.batch_size))
     for i in range(args.epochs):
-        if args.profile and i == (args.epochs // 2):
+        if args.tensorboard and i == (args.epochs // 2):
             print("---- collect tensorboard")
             options = tf.profiler.experimental.ProfilerOptions(host_tracer_level = 3, python_tracer_level = 1, device_tracer_level = 1)
             tf.profiler.experimental.start('./tensorboard_data', options = options)
         start_time = time.time()
         elmo_model.evaluate(test_generator, num_iter=num_iter, batch_size=args.batch_size)
         end_time = time.time()
-        print("duration: ", end_time - start_time)
+        print("Iteration: {}, inference time: {}".format(i, end_time - start_time))
         if i > args.epoch_warmup:
             total_time += end_time - start_time
             total_sample += num_iter * args.batch_size
-        if args.profile and i == (args.epochs // 2):
+        if args.tensorboard and i == (args.epochs // 2):
             tf.profiler.experimental.stop()
             print("---- collect tensorboard end")
     latency = total_time / total_sample * 1000
