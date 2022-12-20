@@ -4,7 +4,10 @@ from elmo.lm_generator import LMDataGenerator
 from elmo.model import ELMo
 import argparse
 import time
+import tensorflow as tf
 
+
+tf.config.experimental.enable_tensor_float_32_execution(False)
 parameters = {
     'multi_processing': False,
     'n_threads': 4,
