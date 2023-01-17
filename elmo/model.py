@@ -178,7 +178,7 @@ class ELMo(object):
 
         print('Training took {0} sec'.format(str(time.time() - t_start)))
 
-    def evaluate(self, test_data, num_iter, batch_size):
+    def evaluate(self, test_data, num_iter, batch_size, hook=None):
 
         def unpad(x, y_true, y_pred):
             y_true_unpad = []
@@ -203,7 +203,7 @@ class ELMo(object):
         y_true_backward = np.asarray(y_true_backward)
 
         # Predict outputs
-        y_pred_forward, y_pred_backward = self._model.predict([x, y_true_forward, y_true_backward], steps=num_iter, batch_size=batch_size)
+        y_pred_forward, y_pred_backward = self._model.predict([x, y_true_forward, y_true_backward], steps=num_iter, batch_size=batch_size, callbacks=hook)
 
         # Unpad sequences
         y_true_forward, y_pred_forward = unpad(x, y_true_forward, y_pred_forward)

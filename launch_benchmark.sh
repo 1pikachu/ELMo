@@ -9,6 +9,7 @@ function main {
     set_environment
 
     # requirements
+    cp oob-common/hooks.py .
 
     # if multiple use 'xxx,xxx,xxx'
     model_name_list=($(echo "${model_name}" |sed 's/,/ /g'))

@@ -5,6 +5,7 @@ from elmo.model import ELMo
 import argparse
 import time
 import tensorflow as tf
+from hooks import ExampleHook
 
 
 tf.config.experimental.enable_tensor_float_32_execution(False)
@@ -125,15 +126,16 @@ if args.evaluate:
     num_iter = len(test_generator)
 
     print("dataset length: {}, batch_size: {}".format(len(test_generator), args.batch_size))
+    hook = ExampleHook()
     for i in range(args.epochs):
         if args.tensorboard and i == (args.epochs // 2):
             print("---- collect tensorboard")
             options = tf.profiler.experimental.ProfilerOptions(host_tracer_level = 3, python_tracer_level = 1, device_tracer_level = 1)
             tf.profiler.experimental.start('./tensorboard_data', options = options)
         start_time = time.time()
-        elmo_model.evaluate(test_generator, num_iter=num_iter, batch_size=args.batch_size)
+        elmo_model.evaluate(test_generator, num_iter=num_iter, batch_size=args.batch_size, hook=[hook])
         end_time = time.time()
-        print("Iteration: {}, inference time: {}".format(i, end_time - start_time), flush=True)
+        # print("Iteration: {}, inference time: {}".format(i, end_time - start_time), flush=True)
         if i > args.epoch_warmup:
             total_time += end_time - start_time
             total_sample += num_iter * args.batch_size
