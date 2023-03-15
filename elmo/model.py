@@ -203,7 +203,10 @@ class ELMo(object):
         y_true_backward = np.asarray(y_true_backward)
 
         # Predict outputs
+        start_time = time.time()
         y_pred_forward, y_pred_backward = self._model.predict([x, y_true_forward, y_true_backward], steps=num_iter, batch_size=batch_size, callbacks=hook)
+        end_time = time.time()
+        return end_time - start_time
 
         # Unpad sequences
         y_true_forward, y_pred_forward = unpad(x, y_true_forward, y_pred_forward)

@@ -132,12 +132,10 @@ if args.evaluate:
             print("---- collect tensorboard")
             options = tf.profiler.experimental.ProfilerOptions(host_tracer_level = 3, python_tracer_level = 1, device_tracer_level = 1)
             tf.profiler.experimental.start('./tensorboard_data', options = options)
-        start_time = time.time()
-        elmo_model.evaluate(test_generator, num_iter=num_iter, batch_size=args.batch_size, hook=[hook])
-        end_time = time.time()
+        cost_time = elmo_model.evaluate(test_generator, num_iter=num_iter, batch_size=args.batch_size, hook=[hook])
         # print("Iteration: {}, inference time: {}".format(i, end_time - start_time), flush=True)
         if i > args.epoch_warmup:
-            total_time += end_time - start_time
+            total_time += cost_time
             total_sample += num_iter * args.batch_size
         if args.tensorboard and i == (args.epochs // 2):
             tf.profiler.experimental.stop()

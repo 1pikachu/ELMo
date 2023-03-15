@@ -1,6 +1,18 @@
 import numpy as np
 import tensorflow as tf
 
+def pad_dataset(x, batch_size):
+    total_item = len(x)
+    remain_item = total_item % batch_size
+    if remain_item > 0:
+        pad_item = batch_size - remain_item
+        one_item = x[0]
+        if len(x.shape) > 1:
+            one_item = np.expand_dims(one_item, axis = 0)
+        pad_v = np.repeat(one_item, pad_item, axis = 0)
+        x = np.concatenate((x, pad_v), axis = 0)
+    return x
+
 
 class LMDataGenerator(tf.keras.utils.Sequence):
     """Generates data for tf.keras"""
@@ -68,6 +80,9 @@ class LMDataGenerator(tf.keras.utils.Sequence):
 
         back_word_indices_batch = back_word_indices_batch[:, :, np.newaxis]
 
+        word_indices_batch = pad_dataset(word_indices_batch, self.batch_size)
+        for_word_indices_batch = pad_dataset(for_word_indices_batch, self.batch_size)
+        back_word_indices_batch = pad_dataset(back_word_indices_batch, self.batch_size)
         return [word_indices_batch if self.token_encoding == 'word' else word_char_indices_batch, for_word_indices_batch, back_word_indices_batch], []
 
     def on_epoch_end(self):
